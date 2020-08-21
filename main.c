@@ -227,28 +227,121 @@ void 	ft_read_map(int argc, char **argv, t_world *world)
 		i++;
 	}
 } */
+double rad(float angle)
+{
+	return(angle * M_PI / 180);
+}
 
 void ft_init_player(t_player *player)
 {
 	player->angle = 60;
-	player->distance_to_win = (WIN_WIDTH / 2) / (tan(player->angle / 2));
+	player->distance_to_win = (WIN_WIDTH / 2) / (tan(rad(player->angle / 2)));
 	player->speed = 16;
 	player->h = 32;
-	player->x = 96;
-	player->y = 224;
+	player->x = 300;
+	player->y = 524;
 	player->y_center = WIN_HEIGHT / 2;
 }
 
-double rad(int angle)
-{
-	return(angle * M_PI / 180);
-}
+
 
 int ft_is_wall(t_world *world, int x, int y)
 {
 	if (x < 0 || x >= world->map_w || y < 0 || y >= world->map_h)
 		return -1;
 	return (world->map[world->map_w * y + x]);
+}
+
+float ft_minf(float a, float b)
+{
+	if (b < a)
+		return (b);
+	return (a);
+}
+
+float	ft_get_x_cross_d(float scaner, t_world *world)
+{
+	t_point a;
+	t_point delta;
+
+	a.y = (world->player->y / CELL) * CELL - 1;
+	a.x = world->player->x + (world->player->y - a.y) / tan(rad(scaner));
+	delta.y = -CELL;
+	delta.x = CELL / tan(rad(scaner));
+	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
+	{
+		a.y += delta.y;
+		a.x += delta.x;
+	}
+	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
+		return(sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
+	return (MAXFLOAT);
+}
+
+float	ft_get_y_cross_d(float scaner, t_world *world)
+{
+	t_point b;
+	t_point delta;
+
+	b.x = world->player->x / CELL * 64 + 64;
+	b.y = world->player->y + (world->player->x - b.x) * tan(rad(scaner));
+	delta.x = CELL;
+	delta.y = -CELL * tan(rad(scaner));
+	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
+	{
+		b.y += delta.y;
+		b.x += delta.x;
+	}
+	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
+		return(sqrt(pow(world->player->x - b.x, 2) + pow(world->player->y - b.y, 2)));
+	return (MAXFLOAT);
+}
+
+void ft_calculate_distances(float d[WIN_WIDTH], t_world *world)
+{
+	int i;
+	float angle_step;
+	float scaner;
+	float x_cross_distance;
+	float y_cross_distance;
+	
+	i = -1;	
+	angle_step = (float)world->player->angle / WIN_WIDTH;
+	scaner = world->player->angle + FOV / 2; // слева прибавили к плееру угол 
+	while (++i < WIN_WIDTH)
+	{
+		x_cross_distance = ft_get_x_cross_d(scaner, world);
+		y_cross_distance = ft_get_y_cross_d(scaner, world);
+		d[i] = ft_minf(x_cross_distance, y_cross_distance);
+		d[i] = d[i] * cos(rad(scaner - world->player->angle));
+		printf("distance = %f\n", d[i]);
+		scaner = scaner - angle_step;
+	}
+}
+
+void ft_draw_slices(float distances[WIN_WIDTH], t_world *world)
+{
+	int i;
+	int h;
+	int j;
+	t_point start;
+	t_point end;
+	
+	start.c = 0xFFF;
+	end.c = 0xFFF;
+	start.r = 0;
+	end.r = 0;
+	i = -1;
+	while (++i < WIN_WIDTH)
+	{
+		h = (CELL / distances[i]) * world->player->distance_to_win;
+		j = (WIN_HEIGHT - h) / 2;
+		start.x = i;
+		end.x = i;
+		start.y = j;
+		end.y = j + h;
+		ft_draw_line(world->mlx, start, end);
+	}
 }
 
 int main(int argc, char **argv)
@@ -270,30 +363,9 @@ int main(int argc, char **argv)
 	ft_read_map(argc, argv, &world);
 	ft_draw_background(&mlx);
 	//-----тут погнали рендер
-	int ax;
-	int ay;
-	int cx;
-	int cy;
-	int dx;
-	int dy;
-	int d_ax;
-	int d_ay;
-	d_ay = -64;
-	d_ax = 64 / tan(rad(world.player->angle));
-	// луч вверх нашли y верхней ячейки
-	ay = (world.player->y / CELL) * CELL - 1;
-	ax = world.player->x + (world.player->y - ay)/tan(rad(world.player->angle));
-	cy = ay + d_ay;
-	cx = ax + d_ax;
-	dy = cy + d_ay;
-	dx = cx + d_ax;
-	printf("ay = %d\nax = %d\n", ay, ax);
-	//printf("agridy = %d\nagridx = %d", ay >> 6, ax >> 6);
-	printf("wall = %d\n", ft_is_wall(&world, ax >> 6, ay >> 6));
-	printf("cy = %d\ncx = %d\n", cy, cx);
-	printf("wall = %d\n", ft_is_wall(&world, cx >> 6, cy >> 6));
-	printf("dy = %d\ndx = %d\n", dy, dx);
-	printf("wall = %d\n", ft_is_wall(&world, dx >> 6, dy >> 6));
+	float distances[WIN_WIDTH];
+	ft_calculate_distances(distances, &world);
+	ft_draw_slices(distances, &world);
 	//-----тут заончил рендер
 	mlx_put_image_to_window(mlx.mlx_ptr, mlx.win, mlx.img.img_ptr, 0, 0);
     mlx_hook(mlx.win, 2, 1L << 6, ft_keypress, &mlx);

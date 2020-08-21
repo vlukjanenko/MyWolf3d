@@ -61,7 +61,7 @@ typedef	struct	s_player
 {
 	int x;
 	int y;
-	int angle;
+	float angle;
 	int h;
 	int speed;
 	int distance_to_win;
@@ -89,6 +89,8 @@ typedef	struct	s_world
 void	ft_putpixel(t_mlx *mlx, int x, int y, int c);
 void	ft_toradius(t_point *start, t_point *end);
 int		set_color(int r, int g, int b);
+int		ft_draw_line(t_mlx *mlx, t_point start, t_point end);
+
 /* char			**ft_readmap(int fd, int *width, int *height, int *number);
 int				ft_draw_line(t_mlx *mlx, t_point p1, t_point p2);
 int				ft_atoi_base(const char *nbr, unsigned int base);

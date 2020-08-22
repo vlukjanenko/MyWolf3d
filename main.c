@@ -46,12 +46,24 @@ void	*ft_grow_array(void *old_mem, int n, size_t size)
 	return (new_mem);
 }
 
-int		ft_keypress(int keycode, t_mlx *mlx)
+int		ft_keypress(int keycode, t_world *world)
 {
 	if (keycode == 53)
-		ft_close(mlx);
+		ft_close(world->mlx);
+	if (keycode == 123)
+		{
+			world->player->angle = world->player->angle == 360 ? 0 : world->player->angle + 1;
+			ft_draw_world(world);
+		}
+	if (keycode == 124)
+		{
+			world->player->angle =  world->player->angle == 0 ? 360 : world->player->angle - 1;
+			ft_draw_world(world);
+		}
+
 return (EXIT_SUCCESS);
 }
+
 /*
 **    Mlx init
 */
@@ -264,10 +276,27 @@ float	ft_get_x_cross_d(float scaner, t_world *world)
 	t_point a;
 	t_point delta;
 
-	a.y = (world->player->y / CELL) * CELL - 1;
-	a.x = world->player->x + (world->player->y - a.y) / tan(rad(scaner));
-	delta.y = -CELL;
-	delta.x = CELL / tan(rad(scaner));
+	if (scaner == 0 || scaner == 180)
+		return (MAXFLOAT);
+	if (scaner > 0 && scaner < 180)
+	{
+		a.y = (world->player->y / CELL) * CELL + CELL;
+		delta.y = CELL;
+	}
+	else
+	{
+		a.y = (world->player->y / CELL) * CELL - 1;	
+		delta.y = -CELL;
+	} 
+		a.x = world->player->x + (world->player->y - a.y) / tan(rad(scaner));
+	if (scaner > 180 && scaner < 270)	
+		delta.x = -CELL / tan(rad(scaner));
+	else
+	{
+		delta.x = CELL / tan(rad(scaner));
+	}
+	
+	
 	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
 	{
 		a.y += delta.y;
@@ -282,11 +311,21 @@ float	ft_get_y_cross_d(float scaner, t_world *world)
 {
 	t_point b;
 	t_point delta;
-
-	b.x = world->player->x / CELL * 64 + 64;
+	if (scaner == 90 || scaner == 270)
+		return(MAXFLOAT);
+	if (scaner > 90 && scaner < 270)
+	{
+		b.x = world->player->x / CELL * CELL - 1;
+		delta.x = -CELL;
+	}
+	else
+	{
+		b.x = world->player->x / CELL * 64 + 64;
+		delta.x = CELL;
+	}
+	delta.y = (CELL + 1) * tan(rad(scaner));
 	b.y = world->player->y + (world->player->x - b.x) * tan(rad(scaner));
-	delta.x = CELL;
-	delta.y = -CELL * tan(rad(scaner));
+	
 	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
 	{
 		b.y += delta.y;
@@ -307,15 +346,19 @@ void ft_calculate_distances(float d[WIN_WIDTH], t_world *world)
 	
 	i = -1;	
 	angle_step = (float)world->player->angle / WIN_WIDTH;
-	scaner = world->player->angle + FOV / 2; // слева прибавили к плееру угол 
+	scaner = world->player->angle - FOV / 2; // отняи угол
+	if (scaner < 0)
+		scaner = scaner + 360;
 	while (++i < WIN_WIDTH)
 	{
 		x_cross_distance = ft_get_x_cross_d(scaner, world);
 		y_cross_distance = ft_get_y_cross_d(scaner, world);
 		d[i] = ft_minf(x_cross_distance, y_cross_distance);
 		d[i] = d[i] * cos(rad(scaner - world->player->angle));
-		printf("distance = %f\n", d[i]);
-		scaner = scaner - angle_step;
+		//printf("distance[%d] = %f\n", i,d[i]);
+		//printf("x_cross_distance = %f\n", x_cross_distance);
+		//printf("y_cross_distance = %f\n", y_cross_distance);
+		scaner = scaner + angle_step;
 	}
 }
 
@@ -344,6 +387,17 @@ void ft_draw_slices(float distances[WIN_WIDTH], t_world *world)
 	}
 }
 
+void ft_draw_world(t_world *world)
+{
+	float distances[WIN_WIDTH];
+	ft_draw_background(world->mlx);
+	//-----тут погнали рендер
+	ft_calculate_distances(distances, world);
+	ft_draw_slices(distances, world);
+	//-----тут заончил рендер
+	mlx_put_image_to_window(world->mlx->mlx_ptr, world->mlx->win, world->mlx->img.img_ptr, 0, 0);
+}
+
 int main(int argc, char **argv)
 {
     t_mlx mlx;
@@ -361,14 +415,8 @@ int main(int argc, char **argv)
     }
     world.mlx = &mlx;
 	ft_read_map(argc, argv, &world);
-	ft_draw_background(&mlx);
-	//-----тут погнали рендер
-	float distances[WIN_WIDTH];
-	ft_calculate_distances(distances, &world);
-	ft_draw_slices(distances, &world);
-	//-----тут заончил рендер
-	mlx_put_image_to_window(mlx.mlx_ptr, mlx.win, mlx.img.img_ptr, 0, 0);
-    mlx_hook(mlx.win, 2, 1L << 6, ft_keypress, &mlx);
+	ft_draw_world(&world);
+    mlx_hook(mlx.win, 2, 1L << 6, ft_keypress, &world);
 	mlx_hook(mlx.win, 17, 1l << 17, ft_close, &mlx);
     mlx_loop(mlx.mlx_ptr);
 }

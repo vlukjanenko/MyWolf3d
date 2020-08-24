@@ -1,11 +1,14 @@
-//********************************************************************//
-//* F. PERMADI MAKES NO REPRESENTATIONS OR WARRANTIES ABOUT THE      *//
-//* SUITABILITY OF                                                   *//
-//* THE SOFTWARE, EITHER EXPRESS OR IMPLIED, INCLUDING BUT NOT       *//
-//* LIMITED                                                          *//
-//* TO THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A      *//
-//* PARTICULAR PURPOSE                                               *//
-//********************************************************************//
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2020/08/24 20:59:45 by majosue           #+#    #+#             */
+/*   Updated: 2020/08/24 21:08:28 by majosue          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
 #include "wolf3d.h"
 #include <math.h>
@@ -42,7 +45,6 @@ void *ft_grow_array(void *old_mem, int n, size_t size)
 		return (new_mem);
 	ft_memmove(new_mem, old_mem, (n - 1) * size);
 	free(old_mem);
-	//ft_memdel(old_mem); //не работает
 	return (new_mem);
 }
 
@@ -65,15 +67,24 @@ int ft_keypress(int keycode, t_world *world)
 	}
 	if (keycode == 126)
 	{
-		world->player->x += cos(rad(world->player->angle)) * world->player->speed;
-		world->player->y += sin(rad(world->player->angle)) * world->player->speed;
+		new_x = cos(rad(world->player->angle)) * world->player->speed;
+		new_y = sin(rad(world->player->angle)) * world->player->speed;
+		if (!ft_is_wall(world, (world->player->x + new_x + 5) / CELL, (world->player->y + new_y + 5) / CELL))
+		{
+			world->player->x += new_x;
+			world->player->y += new_y;
+		}
 		ft_draw_world(world);
 	}
 	if (keycode == 125)
 	{
-		world->player->x -= cos(rad(world->player->angle)) * world->player->speed;
-		world->player->y -= sin(rad(world->player->angle)) * world->player->speed;
-		ft_draw_world(world);
+		new_x = cos(rad(world->player->angle)) * world->player->speed;
+		new_y = sin(rad(world->player->angle)) * world->player->speed;
+		if (!ft_is_wall(world, (world->player->x - new_x - 5) / CELL, (world->player->y - new_y - 5) / CELL))
+		{
+			world->player->x -= new_x;
+			world->player->y -= new_y;
+		}
 		ft_draw_world(world);
 	}
 
@@ -114,9 +125,6 @@ void ft_fill_rect(t_point start, t_point end, int color, t_mlx *mlx)
 		j++;
 	}
 }
-//*******************************************************************//
-//* Draw background image
-//*******************************************************************//
 
 void ft_draw_background(t_mlx *mlx)
 {
@@ -242,19 +250,6 @@ void ft_read_map(int argc, char **argv, t_world *world)
 	}
 }
 
-/* void ft_print_map(int *map, int w, int size)
-{
-	int i = 0;
-
-	while (i < size)
-	{
-		if (!(i % w) && i / w)
-			printf("\n");
-		printf("%d", map[i]);
-		
-		i++;
-	}
-} */
 double rad(float angle)
 {
 	return (angle * M_PI / 180);
@@ -266,8 +261,8 @@ void ft_init_player(t_player *player)
 	player->distance_to_win = (WIN_WIDTH / 2) / (tan(rad(FOV / 2)));
 	player->speed = 16;
 	player->h = 32;
-	player->x = 448;
-	player->y = 448;
+	player->x = 66;
+	player->y = 66;
 	player->y_center = WIN_HEIGHT / 2;
 }
 
@@ -285,7 +280,7 @@ t_ray ft_minf(t_ray a, t_ray b)
 	return (a);
 }
 
-void ft_get_x_cross0_90(float scaner, t_world *world, t_ray *ray)
+void ft_get_x_cross0_180(float scaner, t_world *world, t_ray *ray)
 {
 	t_point a;
 
@@ -298,42 +293,20 @@ void ft_get_x_cross0_90(float scaner, t_world *world, t_ray *ray)
 		a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
 	}
 	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
-		{
-			ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
-			ray->a = a;
-			ray->texture = 2;
-			return;
-		}
-	ray->distance = MAXFLOAT;
-}
-
-void ft_get_x_cross90_180(float scaner, t_world *world, t_ray *ray)
-{
-	t_point a;
-
-	a.y = (world->player->y / CELL) * CELL + CELL;
-	a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
-
-	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
 	{
-		a.y += CELL;
-		a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
+		ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
+		ray->a = a;
+		ray->texture = 2;
+		return;
 	}
-	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
-		{
-			ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
-			ray->a = a;
-			ray->texture = 2;
-			return;
-		}
 	ray->distance = MAXFLOAT;
 }
 
-void ft_get_x_cross180_270(float scaner, t_world *world, t_ray *ray)
+void ft_get_x_cross180_360(float scaner, t_world *world, t_ray *ray)
 {
 	t_point a;
 
-	a.y = (world->player->y / CELL) * CELL -1;
+	a.y = (world->player->y / CELL) * CELL - 1;
 	a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
 
 	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
@@ -342,98 +315,28 @@ void ft_get_x_cross180_270(float scaner, t_world *world, t_ray *ray)
 		a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
 	}
 	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
-		{
-			ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
-			ray->a = a;
-			ray->texture = 1;
-			return;
-		}
-	ray->distance = MAXFLOAT;
-}
-
-void ft_get_x_cross270_360(float scaner, t_world *world, t_ray *ray)
-{
-	t_point a;
-
-	a.y = (world->player->y / CELL) * CELL -1;
-	a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
-
-	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
 	{
-		a.y -= CELL;
-		a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
+		ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
+		ray->a = a;
+		ray->texture = 1;
+		return;
 	}
-	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
-		{
-			ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
-			ray->a = a;
-			ray->texture = 1;
-			return;
-		}
 	ray->distance = MAXFLOAT;
 }
 
 void ft_get_x_cross_d(float scaner, t_world *world, t_ray *ray)
 {
-	if (scaner >= 0 && scaner < 90)
-			ft_get_x_cross0_90(scaner, world, ray);
-	if (scaner >= 90 && scaner < 180)
-			ft_get_x_cross90_180(scaner, world, ray);
-	if (scaner >= 180 && scaner < 270)
-			ft_get_x_cross180_270(scaner, world, ray);
-	if (scaner >= 270 && scaner < 360)
-			ft_get_x_cross270_360(scaner, world, ray);
+	if (scaner >= 0 && scaner < 180)
+		ft_get_x_cross0_180(scaner, world, ray);
+	else
+		ft_get_x_cross180_360(scaner, world, ray);
 }
 
-void ft_get_y_cross0_90(float scaner, t_world *world, t_ray *ray)
+void ft_get_y_cross90_270(float scaner, t_world *world, t_ray *ray)
 {
 	t_point b;
 
-	b.x = world->player->x / CELL * CELL + CELL;
-	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-
-	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
-	{
-		b.x += CELL;
-		b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-	}
-	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
-		{
-		ray->distance = (sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2)));
-		ray->a = b;
-		ray->texture = 0;
-		return;
-		}
-	ray->distance = MAXFLOAT;
-}
-
-void ft_get_y_cross90_180(float scaner, t_world *world, t_ray *ray)
-{
-t_point b;
-
-	b.x = world->player->x / CELL * CELL -1;
-	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-
-	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
-	{
-		b.x -= CELL;
-		b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-	}
-	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
-		{
-			ray->distance = (sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2)));
-			ray->a = b;
-			ray->texture = 3;
-			return;
-		}
-	ray->distance = MAXFLOAT;
-}
-
-void	ft_get_y_cross180_270(float scaner, t_world *world, t_ray *ray)
-{
-t_point b;
-
-	b.x = world->player->x / CELL * CELL -1;
+	b.x = world->player->x / CELL * CELL - 1;
 	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
 
 	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
@@ -451,9 +354,9 @@ t_point b;
 	ray->distance = MAXFLOAT;
 }
 
-void ft_get_y_cross270_360(float scaner, t_world *world, t_ray *ray)
+void ft_get_y_cross270_90(float scaner, t_world *world, t_ray *ray)
 {
-t_point b;
+	t_point b;
 
 	b.x = world->player->x / CELL * CELL + CELL;
 	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
@@ -464,26 +367,22 @@ t_point b;
 		b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
 	}
 	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
-		{
-			ray->distance = (sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2)));
-			ray->a = b;
-			ray->texture = 0;
-			return;
-		}
-		ray->distance = MAXFLOAT;
+	{
+		ray->distance = (sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2)));
 		ray->a = b;
+		ray->texture = 0;
+		return;
+	}
+	ray->distance = MAXFLOAT;
+	ray->a = b;
 }
 
 void ft_get_y_cross_d(float scaner, t_world *world, t_ray *ray)
 {
-	if (scaner >= 0 && scaner < 90)
-		ft_get_y_cross0_90(scaner, world, ray);
-	if (scaner >= 90 && scaner < 180)
-		ft_get_y_cross90_180(scaner, world, ray);
-	if (scaner >= 180 && scaner < 270)
-		ft_get_y_cross180_270(scaner, world, ray);
-	if (scaner >= 270 && scaner < 360)
-		ft_get_y_cross270_360(scaner, world, ray);
+	if (scaner >= 90 && scaner < 270)
+		ft_get_y_cross90_270(scaner, world, ray);
+	else
+		ft_get_y_cross270_90(scaner, world, ray);
 }
 
 void ft_calculate_distances(t_ray d[WIN_WIDTH], t_world *world)
@@ -499,7 +398,7 @@ void ft_calculate_distances(t_ray d[WIN_WIDTH], t_world *world)
 	scaner = world->player->angle - FOV / 2; // отняи угол
 	if (scaner < 0)
 		scaner = scaner + 360;
-	printf("scaner = %f\n", scaner);
+	//printf("scaner = %f\n", scaner);
 
 	while (++i < WIN_WIDTH)
 	{
@@ -515,7 +414,7 @@ void ft_calculate_distances(t_ray d[WIN_WIDTH], t_world *world)
 		if (scaner >= 360)
 			scaner = 360 - scaner;
 	}
-	printf("scaner = %f\n", scaner);
+	//printf("scaner = %f\n", scaner);
 }
 
 void ft_fill_slice(t_point start, t_point end, t_ray ray, t_world *world)
@@ -526,7 +425,7 @@ void ft_fill_slice(t_point start, t_point end, t_ray ray, t_world *world)
 	int y;
 	int strt;
 	int color;
-	
+
 	strt = start.y;
 	h = end.y - start.y;
 	k = (float)CELL / h;
@@ -546,14 +445,11 @@ void ft_fill_slice(t_point start, t_point end, t_ray ray, t_world *world)
 	{
 		x = ray.a.y % CELL;
 	}
-	/* else 
-	{
-		x = ray.a.y % CELL;
-	} */
+
 	while (strt <= end.y)
 	{
 		y = (strt - start.y) * k;
-		color = world->txtre[0].img_data[world->txtre[0].w * y + x];
+		color = world->txtre[ray.texture].img_data[world->txtre[ray.texture].w * y + x];
 		ft_putpixel(world->mlx, start.x, strt, color);
 		strt++;
 	}
@@ -574,7 +470,7 @@ void ft_draw_slices(t_ray d[WIN_WIDTH], t_world *world)
 	i = -1;
 	while (++i < WIN_WIDTH)
 	{
-		h = (CELL / d[i].distance ) * world->player->distance_to_win;
+		h = (CELL / d[i].distance) * world->player->distance_to_win;
 		h = h < 0 ? 0 : h;
 		j = (WIN_HEIGHT - h) / 2;
 		start.x = i;
@@ -582,7 +478,7 @@ void ft_draw_slices(t_ray d[WIN_WIDTH], t_world *world)
 		start.y = j;
 		end.y = j + h;
 		ft_fill_slice(start, end, d[i], world);
-	//	ft_draw_line(world->mlx, start, end);
+		//	ft_draw_line(world->mlx, start, end);
 	}
 }
 
@@ -590,11 +486,9 @@ void ft_draw_world(t_world *world)
 {
 	t_ray distances[WIN_WIDTH];
 	ft_draw_background(world->mlx);
-	//-----тут погнали рендер
-	printf("player angle = %f\n", world->player->angle);
+	//printf("player angle = %f\n", world->player->angle);
 	ft_calculate_distances(distances, world);
 	ft_draw_slices(distances, world);
-	//-----тут заончил рендер
 	mlx_put_image_to_window(world->mlx->mlx_ptr, world->mlx->win, world->mlx->img.img_ptr, 0, 0);
 }
 
@@ -610,15 +504,11 @@ int main(int argc, char **argv)
 	world.player = &player;
 	if (ft_mlx_init(&mlx, WIN_WIDTH, WIN_HEIGHT, "Wolf3d") == EXIT_FAILURE)
 	{
-		printf("Error");
+		ft_putendl("Error");
 		return EXIT_FAILURE;
 	}
 	world.mlx = &mlx;
 	ft_read_map(argc, argv, &world);
-	/* for (int i = 0; i <= 360; i++)
-	{
-		printf("tan(%d) = %f\n", i, tan(rad(i)));
-	} */
 	ft_draw_world(&world);
 	mlx_hook(mlx.win, 2, 1L << 6, ft_keypress, &world);
 	mlx_hook(mlx.win, 17, 1l << 17, ft_close, &mlx);

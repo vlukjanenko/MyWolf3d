@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/25 01:19:41 by lmarques          #+#    #+#             */
-/*   Updated: 2020/08/21 19:47:05 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/24 17:12:59 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 # define WIN_WIDTH 640
 # define WIN_HEIGHT 480
 # define CELL 64
+
 # define FOV 60
 
 typedef struct	s_point
@@ -76,6 +77,13 @@ typedef struct s_txtre
 	int		h;
 }				t_txtre;
 
+typedef	struct s_ray
+{
+	float	distance;
+	t_point	a;
+	int		texture;
+}				t_ray;
+
 typedef	struct	s_world
 {
 	t_txtre		txtre[4];
@@ -91,6 +99,8 @@ void	ft_toradius(t_point *start, t_point *end);
 int		set_color(int r, int g, int b);
 int		ft_draw_line(t_mlx *mlx, t_point start, t_point end);
 void	ft_draw_world(t_world *world);
+double rad(float angle);
+
 
 
 /* char			**ft_readmap(int fd, int *width, int *height, int *number);

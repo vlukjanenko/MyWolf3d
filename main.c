@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/24 20:59:45 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/24 21:08:28 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/25 16:30:32 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -285,16 +285,16 @@ void ft_get_x_cross0_180(float scaner, t_world *world, t_ray *ray)
 	t_point a;
 
 	a.y = (world->player->y / CELL) * CELL + CELL;
-	a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
+	a.x = world->player->x + (a.y - world->player->y) / tan(rad(scaner));
 
 	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
 	{
 		a.y += CELL;
-		a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
+		a.x = world->player->x + (a.y - world->player->y) / tan(rad(scaner));
 	}
 	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
 	{
-		ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
+		ray->distance = sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2));
 		ray->a = a;
 		ray->texture = 2;
 		return;
@@ -306,15 +306,15 @@ void ft_get_x_cross180_360(float scaner, t_world *world, t_ray *ray)
 {
 	t_point a;
 
-	a.y = (world->player->y / CELL) * CELL - 1;
-	a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
+	a.y = (world->player->y / CELL) * CELL;
+	a.x = world->player->x + (a.y - world->player->y) / tan(rad(scaner));
 
-	while (ft_is_wall(world, a.x / CELL, a.y / CELL) == 0)
+	while (ft_is_wall(world, a.x / CELL, (a.y - 1) / CELL) == 0)
 	{
 		a.y -= CELL;
-		a.x = roundf(world->player->x + (a.y - world->player->y) / tan(rad(scaner)));
+		a.x = world->player->x + (a.y - world->player->y) / tan(rad(scaner));
 	}
-	if (ft_is_wall(world, a.x / CELL, a.y / CELL) == 1)
+	if (ft_is_wall(world, a.x / CELL, (a.y - 1) / CELL) == 1)
 	{
 		ray->distance = (sqrt(pow(world->player->x - a.x, 2) + pow(world->player->y - a.y, 2)));
 		ray->a = a;
@@ -336,17 +336,17 @@ void ft_get_y_cross90_270(float scaner, t_world *world, t_ray *ray)
 {
 	t_point b;
 
-	b.x = world->player->x / CELL * CELL - 1;
+	b.x = world->player->x / CELL * CELL;
 	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-
-	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
+	
+	while (ft_is_wall(world, (b.x - 1) / CELL, b.y / CELL) == 0)
 	{
 		b.x -= CELL;
 		b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
 	}
-	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
+	if (ft_is_wall(world, (b.x - 1) / CELL, b.y / CELL) == 1)
 	{
-		ray->distance = (sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2)));
+		ray->distance = sqrt(pow(world->player->x - b.x, 2) + pow(world->player->y - b.y, 2));
 		ray->a = b;
 		ray->texture = 3;
 		return;
@@ -368,7 +368,7 @@ void ft_get_y_cross270_90(float scaner, t_world *world, t_ray *ray)
 	}
 	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
 	{
-		ray->distance = (sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2)));
+		ray->distance = sqrt(pow(b.x - world->player->x, 2) + pow(b.y - world->player->y, 2));
 		ray->a = b;
 		ray->texture = 0;
 		return;
@@ -446,7 +446,7 @@ void ft_fill_slice(t_point start, t_point end, t_ray ray, t_world *world)
 		x = ray.a.y % CELL;
 	}
 
-	while (strt <= end.y)
+	while (strt < end.y)
 	{
 		y = (strt - start.y) * k;
 		color = world->txtre[ray.texture].img_data[world->txtre[ray.texture].w * y + x];
@@ -478,7 +478,7 @@ void ft_draw_slices(t_ray d[WIN_WIDTH], t_world *world)
 		start.y = j;
 		end.y = j + h;
 		ft_fill_slice(start, end, d[i], world);
-		//	ft_draw_line(world->mlx, start, end);
+		//ft_draw_line(world->mlx, start, end);
 	}
 }
 
@@ -486,7 +486,7 @@ void ft_draw_world(t_world *world)
 {
 	t_ray distances[WIN_WIDTH];
 	ft_draw_background(world->mlx);
-	//printf("player angle = %f\n", world->player->angle);
+//	printf("player angle = %f\n", world->player->angle);
 	ft_calculate_distances(distances, world);
 	ft_draw_slices(distances, world);
 	mlx_put_image_to_window(world->mlx->mlx_ptr, world->mlx->win, world->mlx->img.img_ptr, 0, 0);

@@ -6,7 +6,7 @@
 #    By: majosue <majosue@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2019/11/13 10:14:46 by majosue           #+#    #+#              #
-#    Updated: 2020/08/20 14:51:33 by majosue          ###   ########.fr        #
+#    Updated: 2020/08/25 22:10:21 by majosue          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ MINILIBX = minilibx_macos/libmlx.a
 LIBFT = libft/libft.a
 COMPILERC = gcc
 FLAGS = -g
-SOURCES  =  main.c draw.c
+SOURCES  =  main.c draw.c ft_get_x_cross_d.c ft_get_y_cross_d.c ft_read_map.c \
+init.c ft_keypress.c
 
 OBJECTS = $(SOURCES:.c=.o)
 .PHONY: clean fclean re all

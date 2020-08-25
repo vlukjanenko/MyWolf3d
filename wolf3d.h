@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/25 01:19:41 by lmarques          #+#    #+#             */
-/*   Updated: 2020/08/25 16:24:33 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/25 22:25:41 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,15 @@
 # include <fcntl.h>
 # include <stdio.h>
 
-# define WIN_WIDTH 640
-# define WIN_HEIGHT 480
-# define CELL 64
-
+# define WIN_WIDTH 1280
+# define WIN_HEIGHT 1024
+# define CELL 256
 # define FOV 60
 
 typedef struct	s_point
 {
 	int		x;
 	int		y;
-	int		r;
-	int		c;
 }				t_point;
 
 typedef struct	s_img
@@ -47,29 +44,22 @@ typedef struct	s_mlx
 {
 	void		*mlx_ptr;
 	void		*win;
-    int         w;
-    int         h;
+	int			w;
+	int			h;
 	t_img		img;
 }				t_mlx;
 
-typedef	union	u_color
-{
-	unsigned int	argb;
-	unsigned char	cpnt[4];
-}				t_color;
-
 typedef	struct	s_player
 {
-	int x;
-	int y;
-	float angle;
-	int h;
-	int speed;
-	int distance_to_win;
-	int y_center;
+	int		x;
+	int		y;
+	float	angle;
+	int		h;
+	int		speed;
+	int		distance_to_win;
 }				t_player;
 
-typedef struct s_txtre
+typedef struct	s_txtre
 {
 	void	*img;
 	int		*img_data;
@@ -77,7 +67,7 @@ typedef struct s_txtre
 	int		h;
 }				t_txtre;
 
-typedef	struct s_ray
+typedef	struct	s_ray
 {
 	float	distance;
 	t_point	a;
@@ -94,30 +84,24 @@ typedef	struct	s_world
 	int			map_h;
 }				t_world;
 
-void	ft_putpixel(t_mlx *mlx, int x, int y, int c);
-void	ft_toradius(t_point *start, t_point *end);
-int		set_color(int r, int g, int b);
-int		ft_draw_line(t_mlx *mlx, t_point start, t_point end);
-void	ft_draw_world(t_world *world);
-int 	ft_is_wall(t_world *world, int x, int y);
-double rad(float angle);
-
-
-
-/* char			**ft_readmap(int fd, int *width, int *height, int *number);
-int				ft_draw_line(t_mlx *mlx, t_point p1, t_point p2);
-int				ft_atoi_base(const char *nbr, unsigned int base);
-int				ft_rotx(int key, t_mlx *mlx, double a);
-int				ft_roty(int key, t_mlx *mlx, double a);
-int				ft_draw(t_mlx *mlx);
-void			ft_events(t_mlx *mlx);
+void			ft_putpixel(t_mlx *mlx, int x, int y, int c);
+void			ft_draw_background(t_mlx *mlx);
+void			ft_draw_slices(t_ray d[WIN_WIDTH], t_world *world);
+void			ft_fill_slice(t_point start, t_point end, t_ray ray,\
+t_world *world);
+void			ft_draw_world(t_world *world);
+int				ft_is_wall(t_world *world, int x, int y);
+t_ray			ft_minf(t_ray a, t_ray b);
+void			ft_get_x_cross_d(float scaner, t_world *world, t_ray *ray);
+void			ft_get_y_cross_d(float scaner, t_world *world, t_ray *ray);
+double			rad(float angle);
+void			ft_exit(char *str, char *str2);
+void			ft_read_map(int argc, char **argv, t_world *world);
+void			ft_clean_array(char ***array);
 int				ft_close(t_mlx *mlx);
-void			ft_win_to_log(t_mlx *mlx);
-int				ft_set_colour(t_point *point, int zmax);
-int				ft_getcolor(t_point p1, t_point end, t_point current);
-void			ft_reset(int key, t_mlx *mlx);
-int				ft_find_zmax(char **a);
-int				ft_find_d(t_mlx *mlx, int zmax);
-void			ft_put_help(t_mlx *mlx); */
+void			ft_put_player(t_world *world);
+void			ft_init_world(t_world *world);
+void			ft_mlx_init(t_mlx *mlx, int w, int h, char *title);
+int				ft_keypress(int keycode, t_world *world);
 
 #endif

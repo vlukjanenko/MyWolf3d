@@ -6,22 +6,11 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/24 19:16:55 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/19 14:08:32 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/25 21:11:03 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "wolf3d.h"
-#include <stdio.h>
-#include <math.h>
-
-void	ft_swap(t_point *p1, t_point *p2)
-{
-	t_point tmp;
-
-	tmp = *p1;
-	*p1 = *p2;
-	*p2 = tmp;
-}
 
 void	ft_putpixel(t_mlx *mlx, int x, int y, int c)
 {
@@ -29,136 +18,87 @@ void	ft_putpixel(t_mlx *mlx, int x, int y, int c)
 		mlx->img.data[y * mlx->w + x] = c;
 }
 
-void	ft_xstep(t_mlx *mlx, t_point start, t_point end)
+void	ft_fill_rect(t_point start, t_point end, int color, t_mlx *mlx)
 {
-	int deltax;
-	int deltay;
-	int error;
-	t_point current;
-	int diry;
+	int i;
+	int j;
 
-	diry = (end.y - start.y >= 0) ? 1 : -1; 
-	current = start;
-	deltax = abs(end.x - start.x);
-	deltay = abs(end.y - start.y);
-	error = 0;
-
-	while (current.x <= end.x)
+	i = start.x;
+	j = start.y;
+	while (j <= end.y + start.y)
 	{
-		ft_putpixel(mlx, current.x, current.y, current.c);
-		error = error + deltay + 1;
-		if (error >= (deltax + 1))
+		while (i <= end.x + start.x)
 		{
-			current.y += diry;
-			error = error - (deltax + 1);
+			ft_putpixel(mlx, i, j, color);
+			i++;
 		}
-		current.x++;
+		i = start.x;
+		j++;
 	}
 }
 
-void	ft_ystep(t_mlx *mlx, t_point start, t_point end)
+void	ft_fill_slice(t_point start, t_point end, t_ray ray, t_world *world)
 {
-	int deltax;
-	int deltay;
-	int error;
-	t_point current;
-	int dirx;
+	float	k;
+	int		h;
+	t_point	txtre;
+	int		strt;
+	int		color;
 
-	dirx = (end.x - start.x >= 0) ? 1 : -1;
-	current = start;
-	deltax = abs(end.x - start.x);
-	deltay = abs(end.y - start.y);
-	error = 0;
-	while (current.y <= end.y)
+	strt = start.y;
+	h = end.y - start.y;
+	k = (float)CELL / h;
+	if (ray.texture == 0)
+		txtre.x = ray.a.y % CELL;
+	if (ray.texture == 1)
+		txtre.x = ray.a.x % CELL;
+	if (ray.texture == 2)
+		txtre.x = ray.a.x % CELL;
+	if (ray.texture == 3)
+		txtre.x = ray.a.y % CELL;
+	while (strt < end.y)
 	{
-		ft_putpixel(mlx, current.x, current.y, current.c);
-		error = error + deltax + 1;
-		if (error >= (deltay + 1))
-		{
-			current.x += dirx;
-			error = error - (deltay + 1);
-		}
-        current.y++;
+		txtre.y = (strt - start.y) * k;
+		color = world->txtre[ray.texture].img_data[world->txtre[ray.texture].w\
+		* txtre.y + txtre.x];
+		ft_putpixel(world->mlx, start.x, strt, color);
+		strt++;
 	}
 }
 
-int		ft_draw_line(t_mlx *mlx, t_point start, t_point end)
+void	ft_draw_slices(t_ray d[WIN_WIDTH], t_world *world)
 {
-	
-	if (abs(end.x - start.x) >= abs(end.y - start.y))
+	int		i;
+	int		h;
+	int		j;
+	t_point	start;
+	t_point	end;
+
+	i = -1;
+	while (++i < WIN_WIDTH)
 	{
-		end.x < start.x ? ft_swap(&end, &start) : end.x;
-		ft_toradius(&start, &end);
-		ft_xstep(mlx, start, end);
+		h = (CELL / d[i].distance) * world->player->distance_to_win;
+		h = h < 0 ? 0 : h;
+		j = (WIN_HEIGHT - h) / 2;
+		start.x = i;
+		end.x = i;
+		start.y = j;
+		end.y = j + h;
+		ft_fill_slice(start, end, d[i], world);
 	}
-	else
-	{
-		end.y < start.y ? ft_swap(&end, &start) : end.y;
-		ft_toradius(&start, &end);
-		ft_ystep(mlx, start, end);
-	}
-	return (1);
 }
 
-void ft_draw_circle(t_mlx *mlx, t_point p)
+void	ft_draw_background(t_mlx *mlx)
 {
-   int x = 0;
-   int y = p.r;
-   int delta = 1 - 2 * p.r;
-   int error = 0;
+	t_point start;
+	t_point end;
 
-   while (y >= 0)
-   {
-	   ft_putpixel(mlx, p.x + x, p.y + y, p.c);
-	   ft_putpixel(mlx, p.x + x, p.y - y, p.c);
-       ft_putpixel(mlx, p.x - x, p.y + y, p.c);
-	   ft_putpixel(mlx, p.x - x, p.y - y, p.c);	   
-       error = 2 * (delta + y) - 1;
-       if ((delta < 0) && (error <= 0))
-       {
-           delta += 2 * ++x + 1;
-           continue;
-       }
-       if ((delta > 0) && (error > 0))
-       {
-           delta -= 2 * --y + 1;
-           continue;
-       }
-       delta += 2 * (++x - --y);
-   }
-}
-
-/* int ft_mlx_init(t_mlx *mlx, int w, int h, char *title)
-{
-    mlx->w = w;
-    mlx->h = h;
-    if (!(mlx->mlx_ptr = mlx_init()) || 
-    !(mlx->win = mlx_new_window(mlx->mlx_ptr, w, h, title)) ||
-    !(mlx->img.img_ptr = mlx_new_image(mlx->mlx_ptr, w, h)) || 
-    !(mlx->img.data = (int*)mlx_get_data_addr(mlx->img.img_ptr, &mlx->img.bpp, &mlx->img.size_l, &mlx->img.endian)))
-        return (EXIT_FAILURE);
-    return(EXIT_SUCCESS);
-} */
-
-void ft_toradius(t_point *start, t_point *end) 
-{
-	double k;
-	t_point p1;
-	t_point p2;
- 
-	if (end->x == start->x)
-    {
-		start->y += start->r;
-		end->y -= end->r;
-		return;
-    }
-	k = ((double)end->y - start->y) / ((double)end->x - start->x);
-	p1.x = (end->x > start->x) ? sqrt(pow(start->r, 2) / (1.0 + pow(k, 2))) : -sqrt(pow(start->r, 2) / (1.0 + pow(k, 2)));
-	p1.y = (end->y > start->y) ? k * p1.x : -fabs(k * p1.x);
-	p2.x = (end->x < start->x) ? sqrt(pow(end->r, 2) / (1.0 + pow(k, 2))) : -sqrt(pow(end->r, 2) / (1.0 + pow(k, 2)));
-	p2.y = (end->y < start->y) ? k * p2.x : -fabs(k * p2.x);  
-	start->y += p1.y;
-	start->x += p1.x;
-	end->y += p2.y;
-	end->x += p2.x;
+	start.x = 0;
+	start.y = 0;
+	end.x = WIN_WIDTH;
+	end.y = WIN_HEIGHT / 2;
+	ft_fill_rect(start, end, 1670625, mlx);
+	start.y = end.y;
+	end.y = WIN_HEIGHT;
+	ft_fill_rect(start, end, 1446932, mlx);
 }

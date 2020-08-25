@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/25 21:35:32 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/25 21:41:53 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/25 23:15:53 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void	ft_read_map(int argc, char **argv, t_world *world)
 	{
 		if (world->map_w == -1)
 			world->map_w = ft_strlen(line);
-		else if (world->map_w != ft_strlen(line))
+		else if (world->map_w != (int)ft_strlen(line))
 			ft_exit("Wrong map line", "");
 		world->map_h++;
 		world->map = ft_grow_array(world->map, world->map_h,\

@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/25 21:51:10 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/25 22:20:20 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/29 17:41:27 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,9 +26,9 @@ void	ft_mlx_init(t_mlx *mlx, int w, int h, char *title)
 
 void	ft_init_world(t_world *world)
 {
-	world->player->angle = 360;
+	world->player->angle = 0;
 	world->player->distance_to_win = (WIN_WIDTH / 2) / (tan(rad(FOV / 2)));
-	world->player->speed = 16;
+	world->player->speed = 48;
 	world->player->h = 32;
 	world->player->x = -1;
 	world->player->y = -1;

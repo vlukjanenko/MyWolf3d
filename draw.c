@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/06/24 19:16:55 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/25 21:11:03 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/29 17:38:49 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,29 +40,29 @@ void	ft_fill_rect(t_point start, t_point end, int color, t_mlx *mlx)
 void	ft_fill_slice(t_point start, t_point end, t_ray ray, t_world *world)
 {
 	float	k;
-	int		h;
 	t_point	txtre;
+	int		delta;
 	int		strt;
 	int		color;
 
-	strt = start.y;
-	h = end.y - start.y;
-	k = (float)CELL / h;
+	delta = (end.y - start.y > WIN_HEIGHT) ?\
+	(end.y - start.y - WIN_HEIGHT) / 2 : 0;
+	strt = start.y + delta;
+	k = (float)CELL / (end.y - start.y);
 	if (ray.texture == 0)
-		txtre.x = ray.a.y % CELL;
+		txtre.x = abs(ray.a.y % CELL);
 	if (ray.texture == 1)
-		txtre.x = ray.a.x % CELL;
+		txtre.x = abs(ray.a.x % CELL);
 	if (ray.texture == 2)
-		txtre.x = ray.a.x % CELL;
+		txtre.x = abs(ray.a.x % CELL);
 	if (ray.texture == 3)
-		txtre.x = ray.a.y % CELL;
-	while (strt < end.y)
+		txtre.x = abs(ray.a.y % CELL);
+	while (strt < end.y - delta)
 	{
 		txtre.y = (strt - start.y) * k;
 		color = world->txtre[ray.texture].img_data[world->txtre[ray.texture].w\
 		* txtre.y + txtre.x];
-		ft_putpixel(world->mlx, start.x, strt, color);
-		strt++;
+		ft_putpixel(world->mlx, start.x, strt++, color);
 	}
 }
 

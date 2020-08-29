@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/25 22:09:49 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/25 22:12:27 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/29 17:48:47 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,8 @@ void	ft_move_forward(t_world *world)
 
 	new_x = cos(rad(world->player->angle)) * world->player->speed;
 	new_y = sin(rad(world->player->angle)) * world->player->speed;
-	if (!ft_is_wall(world, (world->player->x + new_x + 5) / CELL,\
-	(world->player->y + new_y + 5) / CELL))
+	if (!ft_is_wall(world, (world->player->x + new_x + 20),\
+	(world->player->y + new_y + 20)))
 	{
 		world->player->x += new_x;
 		world->player->y += new_y;
@@ -34,8 +34,8 @@ void	ft_move_back(t_world *world)
 
 	new_x = cos(rad(world->player->angle)) * world->player->speed;
 	new_y = sin(rad(world->player->angle)) * world->player->speed;
-	if (!ft_is_wall(world, (world->player->x - new_x - 5) / CELL,\
-	(world->player->y - new_y - 5) / CELL))
+	if (!ft_is_wall(world, (world->player->x - new_x - 20),\
+	(world->player->y - new_y - 20)))
 	{
 		world->player->x -= new_x;
 		world->player->y -= new_y;

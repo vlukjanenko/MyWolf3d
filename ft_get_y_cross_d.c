@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/25 21:24:48 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/25 21:32:00 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/29 17:05:00 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,12 @@ void	ft_get_y_cross90_270(float scaner, t_world *world, t_ray *ray)
 
 	b.x = world->player->x / CELL * CELL;
 	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-	while (ft_is_wall(world, (b.x - 1) / CELL, b.y / CELL) == 0)
+	while (ft_is_wall(world, (b.x - 1), b.y) == 0 && b.y >= 0)
 	{
 		b.x -= CELL;
 		b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
 	}
-	if (ft_is_wall(world, (b.x - 1) / CELL, b.y / CELL) == 1)
+	if (ft_is_wall(world, (b.x - 1), b.y) == 1)
 	{
 		ray->distance = sqrt(pow(world->player->x - b.x, 2)\
 		+ pow(world->player->y - b.y, 2));
@@ -57,12 +57,12 @@ void	ft_get_y_cross270_90(float scaner, t_world *world, t_ray *ray)
 
 	b.x = world->player->x / CELL * CELL + CELL;
 	b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
-	while (ft_is_wall(world, b.x / CELL, b.y / CELL) == 0)
+	while (ft_is_wall(world, b.x, b.y) == 0 && b.y >= 0)
 	{
 		b.x += CELL;
 		b.y = world->player->y + (b.x - world->player->x) * tan(rad(scaner));
 	}
-	if (ft_is_wall(world, b.x / CELL, b.y / CELL) == 1)
+	if (ft_is_wall(world, b.x, b.y) == 1)
 	{
 		ray->distance = sqrt(pow(b.x - world->player->x, 2)\
 		+ pow(b.y - world->player->y, 2));

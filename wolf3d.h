@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2016/11/25 01:19:41 by lmarques          #+#    #+#             */
-/*   Updated: 2020/08/25 22:31:57 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/29 12:21:49 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,7 +91,7 @@ void			ft_fill_slice(t_point start, t_point end, t_ray ray,\
 t_world *world);
 void			ft_draw_world(t_world *world);
 int				ft_is_wall(t_world *world, int x, int y);
-t_ray			ft_minf(t_ray a, t_ray b);
+t_ray			ft_minf(t_ray a, t_ray b, float scaner);
 void			ft_get_x_cross_d(float scaner, t_world *world, t_ray *ray);
 void			ft_get_y_cross_d(float scaner, t_world *world, t_ray *ray);
 double			rad(float angle);

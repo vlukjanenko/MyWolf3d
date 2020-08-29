@@ -6,7 +6,7 @@
 /*   By: majosue <majosue@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2020/08/24 20:59:45 by majosue           #+#    #+#             */
-/*   Updated: 2020/08/25 22:16:24 by majosue          ###   ########.fr       */
+/*   Updated: 2020/08/29 17:41:04 by majosue          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ void	ft_calculate_distances(t_ray d[WIN_WIDTH], t_world *world)
 	{
 		ft_get_x_cross_d(scaner, world, &x_cross_distance);
 		ft_get_y_cross_d(scaner, world, &y_cross_distance);
-		d[i] = ft_minf(x_cross_distance, y_cross_distance);
+		d[i] = ft_minf(x_cross_distance, y_cross_distance, scaner);
 		d[i].distance = d[i].distance * cos(rad(world->player->angle - scaner));
 		scaner = scaner + angle_step;
 		if (scaner >= 360)
